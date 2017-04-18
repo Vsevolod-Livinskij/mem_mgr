@@ -17,6 +17,8 @@ public:
     void* add_element ();
     void delete_element(void* ptr);
     void free_pool ();
+    bool is_ptr_belongs (void* ptr);
+    bool is_ptr_in_chunk (void* ptr);
 
 private:
     void extend_pool (uint32_t new_elem_num);
@@ -44,14 +46,20 @@ public:
     T* allocate ();
     template <typename T>
     void deallocate (T* ptr);
+    template <typename T>
+    bool is_belongs_to_pool (T* ptr);
+    template <typename T1, typename T2>
+    bool is_ptrs_are_equal (T1* ptr_lhs, T2* ptr_rhs);
     void free_pools () {
         for (auto &&pool : pools)
             pool.second.free_pool();
     };
 
+
+
 private:
     MemoryManager () {}
-    ~MemoryManager() {}
+    ~MemoryManager() { free_pools(); }
     MemoryManager(MemoryManager const&) = delete;
     MemoryManager& operator= (MemoryManager const&) = delete;
 
@@ -84,4 +92,22 @@ void MemoryManager::deallocate(T* ptr) {
         return;
     }
     existing_pool_iter->second.delete_element(ptr);
+}
+
+template<typename T>
+bool MemoryManager::is_belongs_to_pool(T *ptr) {
+    auto pool_iter = find_pool(T::debug_typeid);
+    if (pool_iter == pools.end()) {
+        std::cout <<"Can't find pool for ptr" << std::endl;
+        return false;
+    }
+    return pool_iter->second.is_ptr_in_chunk(ptr);
+}
+
+template<typename T1, typename T2>
+bool MemoryManager::is_ptrs_are_equal(T1 *ptr_lhs, T2 *ptr_rhs) {
+    if (ptr_lhs == NULL || ptr_rhs == NULL)
+        return (void*)ptr_lhs == (void*)ptr_rhs;
+    return (T1::debug_typeid == T2::debug_typeid) &&
+           ((void*)ptr_lhs == (void*)ptr_rhs);
 }

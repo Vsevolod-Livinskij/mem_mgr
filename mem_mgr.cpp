@@ -2,6 +2,8 @@
 // Created by vsevolod on 17.04.17.
 //
 
+#include <functional>
+
 #include "mem_mgr.h"
 
 #define POOL_DEFAULT_SIZE 2
@@ -77,4 +79,28 @@ void Pool::free_pool() {
     occupied_mem.clear();
     chunks_start.clear();
     std::cout << "Pool now is free" << std::endl;
+}
+
+bool Pool::is_ptr_belongs(void *ptr) {
+    for (auto &&mem : occupied_mem)
+        if (mem.mem_addr == ptr)
+            return true;
+    std::cout << "Ptr wasn't found in occupied_memory" << std::endl;
+    return false;
+}
+
+template <typename A, typename B, typename U = std::less_equal<void*>>
+static bool void_ptr_less(A a, B b, U u = U()) {
+    return u(a, b);
+}
+
+bool Pool::is_ptr_in_chunk(void *ptr) {
+    for (auto &&mem : occupied_mem) {
+        std::cout << "Mem addr: " << mem.mem_addr << " | " << ptr << " | " << (void*)((char *) mem.mem_addr + elem_size) << std::endl;
+        if (void_ptr_less(mem.mem_addr, ptr) &&
+            void_ptr_less(ptr, (char *) mem.mem_addr + elem_size))
+            return true;
+    }
+    std::cout << "Ptr wasn't found in any chunk" << std::endl;
+    return false;
 }

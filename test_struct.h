@@ -11,30 +11,39 @@
 
 struct A {
     int mem1;
-    double mem2;
+    long long int mem2;
 
-    int get_mem1 ();
-    bool set_mem1 (int val);
+    static int get_mem1 (A* ptr);
+    static void set_mem1 (A* ptr, int val);
+    static long long int get_mem2 (A* ptr);
+    static void set_mem2 (A* ptr, long long int val);
 
     static constexpr uint32_t debug_typeid = 1; // Replace type with uuid_t
     static A* create ();
     static void remove (A* ptr);
+    static bool is_ptr_are_equal (A* ptr_lhs, A* ptr_rhs);
 
 private:
     A () {}
+    static bool is_ok (A* ptr);
     template <typename T>
     friend T* MemoryManager::allocate();
 };
 
 struct B {
-    int mem1;
-    double mem2;
+    double mem1;
 
-//This field should always be private, even in structs
+    static double get_mem1 (B* ptr);
+    static void set_mem1 (B* ptr, double val);
+
     static constexpr uint32_t debug_typeid = 2; // Replace type with uuid_t
-    B () {}
+    static B* create ();
+    static void remove (B* ptr);
 
-    static constexpr uint32_t get_debug_typeid() { return debug_typeid; }
-    static B* create_B ();
+private:
+    B () {}
+    static bool is_ok (B* ptr);
+    template <typename T>
+    friend T* MemoryManager::allocate();
 };
 
